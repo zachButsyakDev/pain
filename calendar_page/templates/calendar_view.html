@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+{% block title %}Calendar – Study Helper{% endblock %}
+ 
+{% block extra_head %}
+<style>
+  /* ── Calendar grid ── */
+  .cal-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 600;
+    background: #007bff;
+    color: #fff;
+    border-radius: 6px 6px 0 0;
+  }
+  .cal-header div { padding: .5rem 0; }
+ 
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-left: 1px solid #dee2e6;
+    border-top: 1px solid #dee2e6;
+  }
+  .cal-cell {
+    min-height: 100px;
+    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .cal-cell:hover { background: #f0f4ff; }
+  .cal-cell.today  { background: #e8f0fe; }
+  .cal-cell.other-month .day-num { color: #adb5bd; }
+ 
+  .day-num {
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+ 
+  /* ── Event pills ── */
+  .event-pill {
+    display: block;
+    font-size: .7rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: #007bff;
+    color: #fff;
+  }
+  .event-pill:hover { opacity: .85; }
+ 
+  /* ── Nav ── */
+  #cal-month-label { min-width: 180px; text-align: center; }
+ 
+  /* ── Tag filter ── */
+  #tag-filter-dropdown { min-width: 160px; }
+  #active-filter-badge { font-size: .8rem; }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">📅 My Calendar</h4>
+  <button class="btn btn-primary btn-sm" id="btn-new-event">+ New Event</button>
+</div>
+ 
+<!-- Month nav + Tag filter -->
+<div class="d-flex align-items-center mb-2 flex-wrap">
+  <button class="btn btn-outline-secondary btn-sm mr-2" id="btn-prev">&#8249;</button>
+  <strong id="cal-month-label"></strong>
+  <button class="btn btn-outline-secondary btn-sm ml-2" id="btn-next">&#8250;</button>
+  <button class="btn btn-link btn-sm ml-3" id="btn-today">Today</button>
+ 
+  <!-- Tag filter dropdown -->
+  <div class="dropdown ml-auto">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+            id="tag-filter-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      🏷 Filter by Tag
+    </button>
+    <div class="dropdown-menu dropdown-menu-right" id="tag-filter-dropdown" aria-labelledby="tag-filter-btn">
+      <button class="dropdown-item active" data-tag="">All Events</button>
+      <div class="dropdown-divider" id="tag-divider"></div>
+      <!-- Tags injected here by JS -->
+    </div>
+  </div>
+</div>
+ 
+<!-- Active filter badge -->
+<div class="mb-2" id="active-filter-badge" style="display:none;">
+  Showing: <span class="badge badge-primary" id="filter-badge-label"></span>
+  <button class="btn btn-link btn-sm p-0 ml-1" id="btn-clear-filter">Clear</button>
+</div>
+ 
+<!-- Calendar -->
+<div class="cal-header">
+  <div>Sun</div><div>Mon</div><div>Tue</div>
+  <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+</div>
+<div class="cal-grid" id="cal-grid"></div>
+ 
+<!-- ── CREATE / EDIT Modal ── -->
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+ 
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title">New Event</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+ 
+      <div class="modal-body">
+        <div id="modal-error" class="alert alert-danger d-none"></div>
+ 
+        <div class="form-group">
+          <label for="f-title">Title <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="f-title" placeholder="e.g. Math Exam" maxlength="250">
+        </div>
+ 
+        <div class="form-group">
+          <label for="f-desc">Description</label>
+          <textarea class="form-control" id="f-desc" rows="2" placeholder="Optional notes…"></textarea>
+        </div>
+ 
+        <div class="form-group">
+          <label for="f-start">Start Date &amp; Time <span class="text-danger">*</span></label>
+          <input type="datetime-local" class="form-control" id="f-start">
+        </div>
+ 
+        <div class="form-group">
+          <label for="f-duration">Duration (minutes)</label>
+          <input type="number" class="form-control" id="f-duration" value="60" min="5" max="1440">
+        </div>
+ 
+        <div class="form-group">
+          <label for="f-tags">
+            Tags
+            <small class="text-muted">(comma-separated)</small>
+          </label>
+          <input type="text" class="form-control" id="f-tags" placeholder="e.g. exam, math, group">
+          <div id="tag-preview" class="mt-1"></div>
+        </div>
+      </div>
+ 
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger d-none" id="btn-delete">Delete</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-save">Save Event</button>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+{% endblock %}
+ 
+ 
+{% block extra_scripts %}
+<script>
+// ── CSRF helper ──
+// Read token from the Django-rendered hidden input (more reliable than cookie)
+function getCSRF() {
+  const el = document.querySelector('[name=csrfmiddlewaretoken]');
+  if (el) return el.value;
+  // Fallback to cookie
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+const CSRF = getCSRF();
+ 
+// ── State ──
+let allEvents = [];
+let currentYear, currentMonth;
+let editingId = null;
+let activeTag = '';   // '' means show all
+ 
+// ── Fetch all events ──
+async function loadEvents() {
+  const res = await fetch("{% url 'events_json' %}");
+  allEvents = await res.json();
+  rebuildTagDropdown();
+  renderCalendar();
+}
+ 
+// ── Build tag dropdown from all unique tags across events ──
+function rebuildTagDropdown() {
+  const tagSet = new Set();
+  allEvents.forEach(ev => {
+    ev.tags.forEach(t => tagSet.add(t));
+  });
+ 
+  const dropdown = document.getElementById('tag-filter-dropdown');
+  // Remove old tag items (keep "All Events" and divider)
+  dropdown.querySelectorAll('.tag-option').forEach(el => el.remove());
+ 
+  const divider = document.getElementById('tag-divider');
+ 
+  if (tagSet.size === 0) {
+    divider.style.display = 'none';
+  } else {
+    divider.style.display = '';
+    tagSet.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'dropdown-item tag-option';
+      btn.dataset.tag = tag;
+      btn.textContent = tag;
+      dropdown.appendChild(btn);
+    });
+  }
+}
+ 
+// ── Handle tag filter selection ──
+document.getElementById('tag-filter-dropdown').addEventListener('click', function(e) {
+  if (!e.target.matches('.dropdown-item')) return;
+ 
+  // Update active styling
+  this.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+  e.target.classList.add('active');
+ 
+  activeTag = e.target.dataset.tag;
+  updateFilterBadge();
+  renderCalendar();
+});
+ 
+document.getElementById('btn-clear-filter').addEventListener('click', () => {
+  activeTag = '';
+  document.querySelectorAll('#tag-filter-dropdown .dropdown-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('#tag-filter-dropdown .dropdown-item[data-tag=""]').classList.add('active');
+  updateFilterBadge();
+  renderCalendar();
+});
+ 
+function updateFilterBadge() {
+  const badge = document.getElementById('active-filter-badge');
+  const label = document.getElementById('filter-badge-label');
+  if (activeTag) {
+    badge.style.display = '';
+    label.textContent = activeTag;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+ 
+// ── Calendar render ──
+function renderCalendar() {
+  const label = document.getElementById('cal-month-label');
+  const grid  = document.getElementById('cal-grid');
+ 
+  const monthNames = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+  label.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+ 
+  const firstDay   = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const today = new Date();
+ 
+  // Filter events by active tag
+  const visibleEvents = activeTag
+    ? allEvents.filter(ev => ev.tags.includes(activeTag))
+    : allEvents;
+ 
+  grid.innerHTML = '';
+ 
+  for (let i = 0; i < firstDay; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell other-month';
+    grid.appendChild(cell);
+  }
+ 
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    const isToday = (d === today.getDate() &&
+                     currentMonth === today.getMonth() &&
+                     currentYear  === today.getFullYear());
+    cell.className = 'cal-cell' + (isToday ? ' today' : '');
+ 
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = d;
+    cell.appendChild(num);
+ 
+    const dayStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayEvents = visibleEvents.filter(e => e.start.startsWith(dayStr));
+ 
+    dayEvents.forEach(ev => {
+      const pill = document.createElement('span');
+      pill.className = 'event-pill';
+      pill.textContent = ev.title;
+      pill.setAttribute('data-toggle', 'tooltip');
+      pill.setAttribute('data-placement', 'top');
+      pill.setAttribute('title',
+        `${ev.start.slice(11,16)} · ${ev.duration} min` +
+        (ev.description ? `\n${ev.description}` : '') +
+        (ev.tags.length ? `\n🏷 ${ev.tags.join(', ')}` : '')
+      );
+      pill.addEventListener('click', e => { e.stopPropagation(); openEdit(ev.id); });
+      cell.appendChild(pill);
+    });
+ 
+    cell.addEventListener('click', () => openCreate(dayStr));
+    grid.appendChild(cell);
+  }
+ 
+  $('[data-toggle="tooltip"]').tooltip({ trigger: 'hover' });
+}
+ 
+// ── Modal helpers ──
+function clearModal() {
+  document.getElementById('f-title').value    = '';
+  document.getElementById('f-desc').value     = '';
+  document.getElementById('f-start').value    = '';
+  document.getElementById('f-duration').value = '60';
+  document.getElementById('f-tags').value     = '';
+  document.getElementById('tag-preview').innerHTML = '';
+  document.getElementById('modal-error').classList.add('d-none');
+}
+ 
+function openCreate(dateStr) {
+  editingId = null;
+  clearModal();
+  document.getElementById('modal-title').textContent = 'New Event';
+  document.getElementById('btn-delete').classList.add('d-none');
+  if (dateStr) document.getElementById('f-start').value = dateStr + 'T09:00';
+  $('#eventModal').modal('show');
+}
+ 
+async function openEdit(id) {
+  editingId = id;
+  clearModal();
+  document.getElementById('modal-title').textContent = 'Edit Event';
+  document.getElementById('btn-delete').classList.remove('d-none');
+ 
+  const res  = await fetch(`/calendar/events/${id}/`);
+  const data = await res.json();
+ 
+  document.getElementById('f-title').value    = data.title;
+  document.getElementById('f-desc').value     = data.description;
+  document.getElementById('f-start').value    = data.start;
+  document.getElementById('f-duration').value = data.duration;
+  document.getElementById('f-tags').value     = data.tags;
+  renderTagPreview(data.tags);
+ 
+  $('#eventModal').modal('show');
+}
+ 
+function showError(msg) {
+  const el = document.getElementById('modal-error');
+  el.textContent = msg;
+  el.classList.remove('d-none');
+}
+ 
+// ── Tag badge preview ──
+function renderTagPreview(raw) {
+  const container = document.getElementById('tag-preview');
+  container.innerHTML = '';
+  raw.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => {
+    const b = document.createElement('span');
+    b.className = 'badge badge-secondary mr-1';
+    b.textContent = tag;
+    container.appendChild(b);
+  });
+}
+ 
+document.getElementById('f-tags').addEventListener('input', function() {
+  renderTagPreview(this.value);
+});
+ 
+// ── Save ──
+document.getElementById('btn-save').addEventListener('click', async () => {
+  const body = new URLSearchParams({
+    title:       document.getElementById('f-title').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    start:       document.getElementById('f-start').value,
+    duration:    document.getElementById('f-duration').value,
+    tags:        document.getElementById('f-tags').value.trim(),
+  });
+ 
+  const url = editingId
+    ? `/calendar/events/${editingId}/edit/`
+    : `/calendar/events/create/`;
+ 
+  const res  = await fetch(url, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCSRF(), 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const data = await res.json();
+ 
+  if (data.error) { showError(data.error); return; }
+  $('#eventModal').modal('hide');
+  await loadEvents();
+});
+ 
+// ── Delete ──
+document.getElementById('btn-delete').addEventListener('click', async () => {
+  if (!confirm('Delete this event?')) return;
+  await fetch(`/calendar/events/${editingId}/delete/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCSRF() },
+  });
+  $('#eventModal').modal('hide');
+  await loadEvents();
+});
+ 
+// ── Nav buttons ──
+document.getElementById('btn-prev').addEventListener('click', () => {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+});
+document.getElementById('btn-next').addEventListener('click', () => {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderCalendar();
+});
+document.getElementById('btn-today').addEventListener('click', () => {
+  const now = new Date();
+  currentYear  = now.getFullYear();
+  currentMonth = now.getMonth();
+  renderCalendar();
+});
+document.getElementById('btn-new-event').addEventListener('click', () => openCreate(null));
+ 
+// ── Boot ──
+const now = new Date();
+currentYear  = now.getFullYear();
+currentMonth = now.getMonth();
+loadEvents();
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome | Study Helper{% endblock %}
+
+{% block content %}
+<div class="text-center my-5">
+    <h1 class="display-4 font-weight-bold">Welcome to Study Helper</h1>
+    <p class="lead text-muted">
+        Organize your classes, notes, and reminders in one place.
+    </p>
+</div>
+
+{% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <!-- Login Card -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="mb-4">Login</h2>
+
+                <!-- Form now submits to the current welcome page -->
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="loginUsername"
+                            name="username"
+                            placeholder="Enter username"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="loginPassword"
+                            name="password"
+                            placeholder="Enter password"
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Card -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="mb-4">Create Account</h2>
+
+                <p class="text-muted mb-4">
+                    New here? Create an account to start using Study Helper.
+                </p>
+
+                <a href="/users/signup/" class="btn btn-outline-primary btn-block">
+                    Sign Up
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

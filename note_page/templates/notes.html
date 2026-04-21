@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Notes | Study Helper{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Notes</h1>
+        <p class="text-muted">Keep all your class notes organized in one place.</p>
+    </div>
+    <a href="{% url 'create_note' %}" class="btn btn-primary">
+        + New Note
+    </a>
+</div>
+
+<!-- Search bar -->
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" class="form-control" name="search"
+               value="{{ search_query }}" placeholder="Search notes...">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+{% if notes %}
+    <!-- Sections sidebar + note cards -->
+    <div class="row">
+        {% if sections %}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Sections</strong>
+                    <a href="{% url 'create_note_section' %}" class="btn btn-sm btn-outline-primary">+</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <a href="{% url 'notes' %}" class="text-decoration-none text-dark">All Notes</a>
+                    </li>
+                    {% for section in sections %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{% url 'notes' %}?section={{ section.section_id }}"
+                           class="text-decoration-none text-dark flex-grow-1">
+                            {{ section.name }}
+                        </a>
+                        <div>
+                            <a href="{% url 'update_note_section' section.section_id %}"
+                               class="text-muted mr-1" title="Rename">✏️</a>
+                            <a href="{% url 'delete_note_section' section.section_id %}"
+                               class="text-muted" title="Delete">🗑️</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-9">
+        {% else %}
+        <div class="col-12">
+        {% endif %}
+
+            <div class="row">
+                {% for note in notes %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ note.title }}</h5>
+                            {% if note.section %}
+                                <span class="badge badge-secondary mb-2">{{ note.section.name }}</span>
+                            {% endif %}
+                            <p class="card-text text-muted flex-grow-1">
+                                {{ note.content|truncatechars:100 }}
+                            </p>
+                            {% if note.updated_at %}
+                                <small class="text-muted">Updated {{ note.updated_at|date:"M j, Y" }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a href="{% url 'note_view' note.note_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'edit_note' note.note_id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'delete_note' note.note_id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <div class="card shadow-sm mt-4">
+        <div class="card-body text-center py-5">
+            {% if search_query %}
+                <h3 class="mb-3">No notes matched "{{ search_query }}"</h3>
+                <a href="{% url 'notes' %}" class="btn btn-outline-secondary">Clear search</a>
+            {% else %}
+                <h3 class="mb-3">You don't have any notes yet</h3>
+                <p class="text-muted mb-4">
+                    Create your first note to get started and keep track of your class material.
+                </p>
+                <a href="{% url 'create_note' %}" class="btn btn-primary btn-lg">
+                    Create Note
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

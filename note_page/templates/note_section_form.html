@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{% if section %}Edit Section{% else %}New Section{% endif %} | Study Helper{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if section %}Edit Section{% else %}New Section{% endif %}</h1>
+    <p class="text-muted">Sections let you group related notes together.</p>
+</div>
+
+<div class="card shadow-sm" style="max-width: 480px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_name">Section Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="text-danger">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'notes' %}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if section %}Save Changes{% else %}Create Section{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

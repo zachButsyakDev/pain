@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }} | Study Helper{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>{{ note.title }}</h1>
+        {% if note.section %}
+            <span class="badge badge-secondary">{{ note.section.name }}</span>
+        {% endif %}
+        {% if note.updated_at %}
+            <p class="text-muted mt-1">Last updated {{ note.updated_at|date:"M j, Y g:i A" }}</p>
+        {% endif %}
+    </div>
+    <div>
+        <a href="{% url 'edit_note' note.note_id %}" class="btn btn-outline-secondary mr-2">Edit</a>
+        <a href="{% url 'delete_note' note.note_id %}" class="btn btn-outline-danger">Delete</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if note.content %}
+            <div style="white-space: pre-wrap; line-height: 1.7;">{{ note.content }}</div>
+        {% else %}
+            <p class="text-muted font-italic">This note has no content yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if note.transcription_text %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header"><strong>Transcription</strong></div>
+    <div class="card-body">
+        <div style="white-space: pre-wrap;">{{ note.transcription_text }}</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{% url 'notes' %}" class="btn btn-outline-secondary">← Back to Notes</a>
+</div>
+{% endblock %}

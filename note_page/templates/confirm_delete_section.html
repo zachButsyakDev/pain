@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Section | Study Helper{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Delete Section</h1>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <h4 class="mb-3">Are you sure you want to delete the "{{ section.name }}" section?</h4>
+        <p class="text-muted mb-4">Notes in this section will not be deleted — they'll just become unsectioned.</p>
+        <form method="post">
+            {% csrf_token %}
+            <a href="{% url 'notes' %}" class="btn btn-outline-secondary mr-3">Cancel</a>
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

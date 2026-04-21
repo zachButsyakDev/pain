@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Study Helper{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    >
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .page-header {
+            margin: 30px 0;
+        }
+
+        .page-subtitle {
+            color: #6c757d;
+        }
+
+        .nav-link {
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            opacity: 0.85;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <a class="navbar-brand" href="{% url 'home' %}">Study Helper</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+        {% if user.is_authenticated %}
+            <!-- LEFT SIDE -->
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notes' %}">Notes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/calendar/">Calendar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account' %}">Account</a>
+                </li>
+            </ul>
+
+            <!-- RIGHT SIDE -->
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item mr-3">
+                    <span class="nav-link">Hi, {{ user.username }}</span>
+                </li>
+                <li class="nav-item">
+                    <form id="logout-form" method="post" action="{% url 'custom_logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light btn-sm">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+
+        {% else %}
+            <!-- NOT LOGGED IN -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <span class="nav-link">Welcome</span>
+                </li>
+            </ul>
+        {% endif %}
+
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container mt-4">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const logoutForm = document.getElementById('logout-form');
+    let internalNavigation = false;
+
+    if (logoutForm) {
+        logoutForm.addEventListener('submit', function (event) {
+            const confirmed = confirm('Are you sure you want to log out?');
+            if (!confirmed) {
+                event.preventDefault();
+            } else {
+                internalNavigation = true;
+            }
+        });
+    }
+
+    document.querySelectorAll('a[href]').forEach(function(link) {
+        link.addEventListener('click', function() {
+            const href = link.getAttribute('href');
+
+            if (href && !href.startsWith('http')) {
+                internalNavigation = true;
+            }
+        });
+    });
+
+    document.querySelectorAll('form').forEach(function(form) {
+        if (form.id !== 'logout-form') {
+            form.addEventListener('submit', function() {
+                internalNavigation = true;
+            });
+        }
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+        if (!internalNavigation) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    window.addEventListener('pagehide', function () {
+        if (!internalNavigation && navigator.sendBeacon) {
+            const data = new FormData();
+            navigator.sendBeacon("{% url 'close_study_session' %}", data);
+        }
+    });
+});
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

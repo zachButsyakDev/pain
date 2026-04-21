@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Study Helper{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Welcome Section -->
+    <div class="p-4 mb-4 bg-white shadow-sm rounded">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <h1 class="mb-2">Welcome back {{ request.user.username }}</h1>
+                <p class="text-muted mb-3 mb-md-0">
+                    Organize your notes, track upcoming events, and stay on top of your studies.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Total Notes</h6>
+                <h2 class="mb-0">{{ notes|length }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Upcoming Events</h6>
+                <h2 class="mb-0">{{ events|length|default:"0" }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Today’s Study Time</h6>
+                <h2 class="mb-0" id="today-study-time" data-saved="{{ saved_today_seconds }}">
+                    0h 0m 0s
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Current Session</h6>
+                <h2 class="mb-0" id="current-session-time" data-seconds="{{ current_session_seconds }}">
+                    0h 0m 0s
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- Recent Notes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title mb-0">Recent Notes</h4>
+                        <a href="{% url 'create_note' %}" class="btn btn-sm btn-primary">New Note</a>
+                    </div>
+
+                    {% if notes %}
+                        <ul class="list-group list-group-flush">
+                            {% for note in notes|slice:":5" %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <a href="{% url 'note_view' note.note_id %}" class="font-weight-bold text-dark d-block">
+                                                {{ note.title }}
+                                            </a>
+                                            <small class="text-muted">Last updated recently</small>
+                                        </div>
+
+                                        <div class="text-right">
+                                            <a href="{% url 'edit_note' note.note_id %}" class="btn btn-sm btn-outline-primary mr-1">
+                                                Edit
+                                            </a>
+                                            <a href="{% url 'delete_note' note.note_id %}" class="btn btn-sm btn-outline-danger">
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if notes|length > 5 %}
+                            <div class="mt-3">
+                                <a href="{% url 'create_note' %}" class="btn btn-link px-0">View all notes</a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <h5 class="mb-2">No notes yet</h5>
+                            <p class="text-muted mb-3">Start by creating your first note.</p>
+                            <a href="{% url 'create_note' %}" class="btn btn-primary">
+                                Create Note
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Preview -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title mb-0">Upcoming Events</h4>
+                        <a href="/calendar/" class="btn btn-sm btn-outline-primary">View Calendar</a>
+                    </div>
+
+                    {% if events %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in events|slice:":5" %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="font-weight-bold">{{ event.title }}</div>
+                                            <small class="text-muted">
+                                                {{ event.date }}{% if event.time %} at {{ event.time }}{% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <h5 class="mb-2">No upcoming events</h5>
+                            <p class="text-muted mb-3">Add an event to keep track of assignments and reminders.</p>
+                            <a href="/calendar/" class="btn btn-primary">Open Calendar</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block extra_scripts %}
+<script>
+    function formatStudyTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours}h ${minutes}m ${secs}s`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentSessionEl = document.getElementById('current-session-time');
+        const todayStudyEl = document.getElementById('today-study-time');
+
+        let currentSessionSeconds = 0;
+        let savedTodaySeconds = 0;
+
+        if (currentSessionEl) {
+            currentSessionSeconds = parseInt(currentSessionEl.dataset.seconds || '0');
+            currentSessionEl.textContent = formatStudyTime(currentSessionSeconds);
+        }
+
+        if (todayStudyEl) {
+            savedTodaySeconds = parseInt(todayStudyEl.dataset.saved || '0');
+            todayStudyEl.textContent = formatStudyTime(savedTodaySeconds + currentSessionSeconds);
+        }
+
+        setInterval(function () {
+            currentSessionSeconds += 1;
+
+            if (currentSessionEl) {
+                currentSessionEl.textContent = formatStudyTime(currentSessionSeconds);
+            }
+
+            if (todayStudyEl) {
+                todayStudyEl.textContent = formatStudyTime(savedTodaySeconds + currentSessionSeconds);
+            }
+        }, 1000);
+    });
+</script>
+{% endblock %}
+{% endblock %}

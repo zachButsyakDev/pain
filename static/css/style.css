@@ -1,0 +1,87 @@
+/* Page background */
+body {
+    background: linear-gradient(to bottom right, #f5f7fb, #eef2f7);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Welcome section */
+.bg-white {
+    border-radius: 16px !important;
+    padding: 30px !important;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 16px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+/* Card titles */
+.card-title {
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    padding: 8px 16px;
+}
+
+/* Primary button stronger */
+.btn-primary {
+    background-color: #1d72e8;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #155ec4;
+}
+
+/* Outline button */
+.btn-outline-primary {
+    border-width: 2px;
+}
+
+/* Stats cards */
+h6.text-uppercase {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+h2 {
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+/* Empty state */
+.text-center h5 {
+    font-weight: 600;
+}
+
+/* List items */
+.list-group-item {
+    border: none;
+}
+
+/* Navbar polish */
+.navbar {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.nav-link {
+    transition: 0.2s;
+}
+
+.nav-link:hover {
+    opacity: 0.8;
+}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}My Account | Study Helper{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>My Account</h1>
+    <p class="text-muted">View your account information and profile details.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="mb-4">Account Information</h4>
+
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Username</div>
+            <div class="col-md-9">{{ user.username }}</div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Email</div>
+            <div class="col-md-9">
+                {% if user.email %}
+                    {{ user.email }}
+                {% else %}
+                    No email added
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 font-weight-bold">Status</div>
+            <div class="col-md-9">Logged in</div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Current Session</h6>
+                <h3 class="mb-0" id="account-current-session-time" data-seconds="{{ current_session_seconds }}">
+                    0h 0m 0s
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Today’s Study Time</h6>
+                <h3 class="mb-0" id="account-today-study-time" data-saved="{{ saved_today_seconds }}">
+                    0h 0m 0s
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-2">Total Study Time</h6>
+                <h3 class="mb-0" id="account-total-study-time" data-seconds="{{ total_study_seconds }}">
+                    0h 0m 0s
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% block extra_scripts %}
+<script>
+    function formatStudyTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours}h ${minutes}m ${secs}s`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentSessionEl = document.getElementById('account-current-session-time');
+        const todayStudyEl = document.getElementById('account-today-study-time');
+        const totalStudyEl = document.getElementById('account-total-study-time');
+
+        let currentSessionSeconds = 0;
+        let savedTodaySeconds = 0;
+        let totalStudySeconds = 0;
+
+        if (currentSessionEl) {
+            currentSessionSeconds = parseInt(currentSessionEl.dataset.seconds || '0');
+            currentSessionEl.textContent = formatStudyTime(currentSessionSeconds);
+        }
+
+        if (todayStudyEl) {
+            savedTodaySeconds = parseInt(todayStudyEl.dataset.saved || '0');
+            todayStudyEl.textContent = formatStudyTime(savedTodaySeconds + currentSessionSeconds);
+        }
+
+        if (totalStudyEl) {
+            totalStudySeconds = parseInt(totalStudyEl.dataset.seconds || '0');
+            totalStudyEl.textContent = formatStudyTime(totalStudySeconds);
+        }
+
+        setInterval(function () {
+            currentSessionSeconds += 1;
+
+            if (currentSessionEl) {
+                currentSessionEl.textContent = formatStudyTime(currentSessionSeconds);
+            }
+
+            if (todayStudyEl) {
+                todayStudyEl.textContent = formatStudyTime(savedTodaySeconds + currentSessionSeconds);
+            }
+        }, 1000);
+    });
+</script>
+{% endblock %}
+{% endblock %}

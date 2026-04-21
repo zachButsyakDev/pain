@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up | Study Helper{% endblock %}
+
+{% block content %}
+
+<!-- Center form on the page -->
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <!-- Card container -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <!-- Page title -->
+                <h2 class="card-title text-center mb-4">
+                    Create an Account
+                </h2>
+
+                <!-- Subtitle -->
+                <p class="text-muted text-center">
+                    Sign up to start using Study Helper.
+                </p>
+
+                <!-- Signup form -->
+                <form method="post">
+                    {% csrf_token %} <!-- Required for security -->
+
+                    <!-- Loop through each form field -->
+                    {% for field in form %}
+                        <div class="form-group">
+
+                            <!-- Field label -->
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+
+                            <!-- Input field -->
+                            {{ field }}
+
+                            
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">
+                                    {{ field.help_text }}
+                                </small>
+                            {% endif %}
+
+                            <!-- Error messages -->
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Sign Up
+                    </button>
+                </form>
+
+                <hr>
+
+                <!-- Link to login page -->
+                <p class="text-center mb-0">
+                    Already have an account?
+                    <a href="/users/login/">Log in</a>
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

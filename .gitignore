@@ -1,0 +1,15 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env
+
+study_env/
+
+# Django database
+db.sqlite3
+
+# Django logs
+*.log
