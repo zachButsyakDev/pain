@@ -34,3 +34,4 @@ https://www.notion.so/Project-Tracker-c07ffb5a8f058277935501db25edb6dc?source=co
 
 Data Model Diagram:
 https://lucid.app/lucidchart/88f1d29f-e18c-48fe-bc2c-bcd70ed60b63/edit?viewport_loc=497%2C-9%2C1303%2C1004%2C0_0&invitatio
+# Study-Help
